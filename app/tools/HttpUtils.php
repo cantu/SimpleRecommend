@@ -76,5 +76,3 @@ function BasicHttpGetByCurl( $url ){
 
 
 }
-
-?>

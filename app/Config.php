@@ -20,5 +20,3 @@ static $sBusLineTable = 'bus_line_tb';
 
 
 
-
-?>

@@ -1,0 +1,195 @@
+
+
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>公交线路查询</title>
+    <link rel="stylesheet" type="text/css" href="http://developer.amap.com/Public/css/demo.Default.css" />
+    <script language="javascript" src="http://webapi.amap.com/maps?v=1.3&key=0bb05a448c9198ae767ef649e5e16549"></script>
+    <script language="javascript">
+        /*
+         * 该示例主要流程分为三个步骤
+         * 1. 首先调用公交路线查询服务(lineSearch)
+         * 2. 根据返回结果解析，输出解析结果(lineSearch_Callback)
+         * 3. 在地图上绘制公交线路()
+         */
+        var mapObj; //地图对象
+        var resLine  = ''; //结果表格对象
+        var circle; //公交站的圆点
+
+        function mapInit() {
+            var opts = {
+                level:13, //设置地图缩放级别
+                center:new AMap.LngLat(116.397428, 39.90923) //设置地图中心点
+            }
+            mapObj = new AMap.Map("iCenter", {
+                view: new AMap.View2D({
+                    center:new AMap.LngLat(116.397428,39.90923),//地图中心点
+                    zoom:13 //地图显示的缩放级别
+                })
+            });
+
+            mapclear();
+            lineSearch();
+        }
+        /*
+         *清空地图覆盖物与查询结果
+         */
+        function mapclear() {
+            btContent = '';
+            resLine   = '';
+            mapObj.clearMap();
+        }
+        /*
+         *公交线路查询
+         */
+        function lineSearch() {
+            //加载公交线路查询插件
+            //实例化公交线路查询类，只取回一条路线
+            AMap.service(["AMap.LineSearch"], function() {
+                var linesearch = new AMap.LineSearch({
+                    pageIndex:1,
+                    city:'北京',
+                    pageSize:1,
+                    extensions:'all'
+                });
+                //搜索“536”相关公交线路
+                //linesearch.search('536', function(status, result){
+                linesearch.search('地铁8号线', function(status, result){
+                    if(status === 'complete' && result.info === 'OK'){
+                        lineSearch_Callback(result);
+                    }else{
+                        alert(result);
+                    }
+                });
+            });
+        }
+        /*
+         * 公交路线查询服务返回数据解析概况
+         * param Array[]  lineArr     返回公交线路总数
+         * param String   lineName    公交线路名称
+         * param String   lineCity    公交所在城市
+         * param String   company     公交所属公司
+         * param Number   stime       首班车时间
+         * param Number   etime       末班车时间
+         * param Number   bprice      公交起步票价
+         * param Number   tprice      公交全程票价
+         * param Array[]  pathArr     公交线路路径数组
+         */
+        function lineSearch_Callback(data) {
+            var lineArr  = data.lineInfo;
+            var lineNum  = data.lineInfo.length;
+            if(lineNum == 0) {
+                resLine = data.info;
+            }
+            else {
+                resLine += "<div id=\"divid" + i + "\"><table>";
+                for(var i = 0; i < lineNum; i++) {
+                    var lineName = lineArr[i].name;
+                    var lineCity = lineArr[i].city;
+                    var distance = lineArr[i].distance;
+                    var company  = lineArr[i].company;
+                    var stime    = lineArr[i].stime;
+                    var etime    = lineArr[i].etime;
+                    var pathArr  = lineArr[i].path;
+                    var stops    = lineArr[i].via_stops;
+                    var startPot = stops[0].location;
+                    var endPot   = stops[stops.length-1].location;
+                    //结果输出用DIV展现，输出内容
+                    resLine += "<tr><td><h3><font color=\"#00a6ac\">" + lineName + "</font></h3></td></tr>";
+                    resLine += "<tr><td>首末车时间：" + stime.substring(0, 2) + ":" + stime.substring(2, 4) + '-' + etime.substring(0, 2) + ":" + etime.substring(2, 4) + "；" + "全长：" + distance + "公里;" + "所属公司：" + company+"</td></tr>";
+                    //绘制第一条路线
+                    if(i==0) drawbusLine(startPot,endPot,pathArr);
+                }
+                resLine += "</table></div>"
+
+                document.getElementById('result').innerHTML = resLine;
+            }
+        }
+
+        /*
+         *绘制路线
+         */
+        function drawbusLine(startPot,endPot,BusArr) {
+            //自定义起点，终点图标
+            var sicon = new AMap.Icon({
+                image: "http://api.amap.com/Public/images/js/poi.png",
+                size: new AMap.Size(44,44),
+                imageOffset: new AMap.Pixel(-334, -180)
+            });
+            var eicon = new AMap.Icon({
+                image: "http://api.amap.com/Public/images/js/poi.png",
+                size: new AMap.Size(44,44),
+                imageOffset: new AMap.Pixel(-334, -134)
+            });
+            //绘制起点，终点
+            var stmarker = new AMap.Marker({
+                map:mapObj,
+                position:new AMap.LngLat(startPot.lng,startPot.lat), //基点位置
+                icon:sicon, //复杂图标
+                offset:{x:-16,y:-34}, //相对于基点的位置
+                zIndex:10
+            });
+            var endmarker = new AMap.Marker({
+                map:mapObj,
+                position:new AMap.LngLat(endPot.lng,endPot.lat), //基点位置
+                icon:eicon, //复杂图标
+                offset:{x:-16,y:-34}, //相对于基点的位置
+                zIndex:10
+            });
+            //绘制乘车的路线
+            busPolyline = new AMap.Polyline({
+                map:mapObj,
+                path:BusArr,
+                strokeColor:"#0000b5",//线颜色
+                strokeOpacity:0.8,//线透明度
+                strokeWeight:6//线宽
+            });
+            mapObj.setFitView();
+        }
+
+
+        //增加站点圆点参考
+        //http://lbs.amap.com/api/javascript-api/example/e/0512-2/
+
+        //添加圆覆盖物
+        function addCircle() {
+            circle = new AMap.Circle({
+                center:new AMap.LngLat("116.403322","39.920255"),// 圆心位置
+                radius:1000, //半径
+                strokeColor: "#F33", //线颜色
+                strokeOpacity: 1, //线透明度
+                strokeWeight: 3, //线粗细度
+                fillColor: "#ee2200", //填充颜色
+                fillOpacity: 0.35//填充透明度
+            });
+            circle.setMap(mapObj);
+        }
+
+
+        //更新圆形，除此以外还可通过插件AMap.CircleEditor进行线覆盖物的更新，详情参看AMap.CircleEditor相关示例介绍
+        function updateCircle(){
+            //新圆形属性
+            var circleoptions={
+                center:new AMap.LngLat("116.368904","39.920255"),// 新圆心位置
+                radius:1500, //新半径
+                strokeColor: "#0000FF", //线颜色
+                strokeOpacity: 0.8, //线透明度
+                strokeWeight: 5, //线粗细度
+                fillColor: "#ee2200", //填充颜色
+                fillOpacity: 0.35//填充透明度
+            };
+            circle.setOptions(circleoptions);//更新圆属性
+        }
+
+    </script>
+</head>
+<body onload="mapInit();">
+<div id="iCenter" style="height:600px" ></div>
+
+<!--<input type="button" value="公交线路查询" onclick="mapclear();lineSearch()" style="margin-left:5px"/> -->
+<div id="r_title"><b>查询结果仅返回第一条:</b></div>
+<div id="result"></div>
+</body>
+</html>						

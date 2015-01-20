@@ -33,7 +33,7 @@
             return null;
         }
         $simple_point = simplePoint( $point );
-        $formate = "%3.3f_%2.3f";
+        $format = "%3.3f_%2.3f";
         $area_name = sprintf( $format, $simple_point['lnt'], $simple_point['lat']);
 
         return $area_name;
@@ -41,5 +41,3 @@
 
 
 
-
-?>
