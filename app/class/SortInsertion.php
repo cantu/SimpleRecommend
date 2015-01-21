@@ -67,6 +67,10 @@ function MergeSort(){
 	
 }
 
+/*
+ * 快速排序
+ */
+
 function QuickSort( $array, $left, $right, $done ) {
 	if( !is_array( $array ) or count( $array ) == 0 ){
 		print"Error, input array is not validate";

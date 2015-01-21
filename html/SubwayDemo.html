@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE HTML>
 <html>
 <head>
@@ -8,6 +6,7 @@
     <link rel="stylesheet" type="text/css" href="http://developer.amap.com/Public/css/demo.Default.css" />
     <script language="javascript" src="http://webapi.amap.com/maps?v=1.3&key=0bb05a448c9198ae767ef649e5e16549"></script>
     <script language="javascript">
+        //reference:http://lbs.amap.com/api/javascript-api/example/m/1302-2/
         /*
          * 该示例主要流程分为三个步骤
          * 1. 首先调用公交路线查询服务(lineSearch)
@@ -31,7 +30,7 @@
             });
 
             mapclear();
-            lineSearch();
+            lineSearch('地铁8号线');
         }
         /*
          *清空地图覆盖物与查询结果
@@ -44,7 +43,7 @@
         /*
          *公交线路查询
          */
-        function lineSearch() {
+        function lineSearch( bus_name) {
             //加载公交线路查询插件
             //实例化公交线路查询类，只取回一条路线
             AMap.service(["AMap.LineSearch"], function() {
@@ -54,10 +53,10 @@
                     pageSize:1,
                     extensions:'all'
                 });
-                //搜索“536”相关公交线路
-                //linesearch.search('536', function(status, result){
-                linesearch.search('地铁8号线', function(status, result){
+                //搜索“地铁8号线”相关公交线路
+                linesearch.search( bus_name, function(status, result){
                     if(status === 'complete' && result.info === 'OK'){
+                        console.log( result);
                         lineSearch_Callback(result);
                     }else{
                         alert(result);
@@ -96,11 +95,17 @@
                     var stops    = lineArr[i].via_stops;
                     var startPot = stops[0].location;
                     var endPot   = stops[stops.length-1].location;
+
                     //结果输出用DIV展现，输出内容
                     resLine += "<tr><td><h3><font color=\"#00a6ac\">" + lineName + "</font></h3></td></tr>";
                     resLine += "<tr><td>首末车时间：" + stime.substring(0, 2) + ":" + stime.substring(2, 4) + '-' + etime.substring(0, 2) + ":" + etime.substring(2, 4) + "；" + "全长：" + distance + "公里;" + "所属公司：" + company+"</td></tr>";
                     //绘制第一条路线
-                    if(i==0) drawbusLine(startPot,endPot,pathArr);
+                    if(i==0){
+                        drawbusLine(startPot,endPot,pathArr);
+                        drawStation( stops );
+                        mapObj.setFitView();
+                    }
+
                 }
                 resLine += "</table></div>"
 
@@ -146,42 +151,42 @@
                 strokeOpacity:0.8,//线透明度
                 strokeWeight:6//线宽
             });
-            mapObj.setFitView();
+
+
+            //增加关键点的圆点，　参考http://lbs.amap.com/api/javascript-api/example/t/1901-2/
+
+            for( var i=0; i<BusArr.length; i++){
+                var point_marker = new AMap.Marker({
+                    map:mapObj,
+                    position: BusArr[i],
+                    icon:"http://webapi.amap.com/images/point.png",
+                    offset:{x:-8,y:-8} //相对于基点的位置
+                });
+
+            }
+
         }
 
+        /*
+         *绘制路线途径站点
+         */
+        function drawStation( stops ) {
 
-        //增加站点圆点参考
-        //http://lbs.amap.com/api/javascript-api/example/e/0512-2/
+            //增加关键点的圆点，　参考http://lbs.amap.com/api/javascript-api/example/t/1901-2/
 
-        //添加圆覆盖物
-        function addCircle() {
-            circle = new AMap.Circle({
-                center:new AMap.LngLat("116.403322","39.920255"),// 圆心位置
-                radius:1000, //半径
-                strokeColor: "#F33", //线颜色
-                strokeOpacity: 1, //线透明度
-                strokeWeight: 3, //线粗细度
-                fillColor: "#ee2200", //填充颜色
-                fillOpacity: 0.35//填充透明度
-            });
-            circle.setMap(mapObj);
+            for( var i=0; i<stops.length; i++){
+                var point_marker = new AMap.Marker({
+                    map:mapObj,
+                    position: stops[i].location,
+                    icon:'./icon/bus_station.png',
+                    offset:{x:-16,y:-16}, //相对于基点的位置
+                    zIndex:50
+                });
+
+            }
+
         }
 
-
-        //更新圆形，除此以外还可通过插件AMap.CircleEditor进行线覆盖物的更新，详情参看AMap.CircleEditor相关示例介绍
-        function updateCircle(){
-            //新圆形属性
-            var circleoptions={
-                center:new AMap.LngLat("116.368904","39.920255"),// 新圆心位置
-                radius:1500, //新半径
-                strokeColor: "#0000FF", //线颜色
-                strokeOpacity: 0.8, //线透明度
-                strokeWeight: 5, //线粗细度
-                fillColor: "#ee2200", //填充颜色
-                fillOpacity: 0.35//填充透明度
-            };
-            circle.setOptions(circleoptions);//更新圆属性
-        }
 
     </script>
 </head>

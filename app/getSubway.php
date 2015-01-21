@@ -6,9 +6,15 @@
  * Date: 14-12-11
  * Time: 上午11:39
  */
-    require_once('./tools/simple_html_dom.php');
-    require_once('./tools/aMap.php');
+    require_once('./class/simple_html_dom.php');
+    require_once('./class/aMapApi.class.php');
 
+
+    function __autoload( $class_name)
+    {
+        require_once( $class_name.'.php');
+        require_once('./tools/'.$class_name.'.php');
+    }
     /*
      * 获取北京所有的地铁线路名称数组
      */
@@ -47,4 +53,4 @@
 $subway_array = parseSubwayName();
 getSubwayPoi( $subway_array);
 
-?>
+
