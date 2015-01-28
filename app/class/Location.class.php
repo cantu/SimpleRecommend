@@ -111,6 +111,7 @@ class Location
     }
 
 
+    /*
     function getLocationName(){
         return $this->location_name;
     }
@@ -122,10 +123,10 @@ class Location
     function getLattitude(){
         return $this->latitude;
     }
+    */
 
 
 
-    /*
     function __get ($property_name )
     {
         if ( isset ($this->$property_name))
@@ -150,7 +151,7 @@ class Location
     {
          unset($this->$property_name);
     }
-    */
+
 
     /**
      * 单元测试

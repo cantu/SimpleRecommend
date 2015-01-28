@@ -133,6 +133,15 @@ Class aMapApi {
     }
 
 
+
+    function printAllBusLines(){
+
+        for( $i=1; $i<=999; $i++){
+            $data =  $this->getBusLine($i);
+            $this->printBusLineInfo( $data);
+        }
+    }
+
     function test()
     {
         $data =  $this->getBusLine(300);
@@ -140,6 +149,9 @@ Class aMapApi {
         //$this->getBusLine('特9');
         $this->searchDriverRoute(116.495, 39.94, 116.4, 39.805);
         $this->regeoDecode(116.397428,39.90923); //天安门(高德)坐标:116.397428,39.90923
+
+        $this->printAllBusLines();
+
     }
 
 

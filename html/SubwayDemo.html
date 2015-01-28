@@ -178,9 +178,10 @@
                 var point_marker = new AMap.Marker({
                     map:mapObj,
                     position: stops[i].location,
-                    icon:'./icon/bus_station.png',
+                    icon:'./icon/bus_station_marker.png',
                     offset:{x:-16,y:-16}, //相对于基点的位置
-                    zIndex:50
+                    angle:45,
+                    zIndex:100
                 });
 
             }
