@@ -1,4 +1,5 @@
 <?php
+namespace Youche\SimpleRecommend;
 /**
  * Created by PhpStorm.
  * User: tusion

@@ -22,3 +22,8 @@ data/
 *.pyc
 
 .idea/
+
+/reference
+/vendor
+#composer usual generate composer.lock
+*.lock

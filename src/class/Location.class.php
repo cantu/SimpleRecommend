@@ -1,10 +1,12 @@
 <?php
+namespace Youche\SimpleRecommend;
 /**
  * Created by PhpStorm.
  * User: tusion
  * Date: 15-1-20
  * Time: 下午4:54
  */
+
 
 class Location
 {

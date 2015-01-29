@@ -1,4 +1,5 @@
 <?php
+namespace Youche\SimpleRecommend;
 /**
  *
  * 主要存放高德地图的接口
@@ -8,9 +9,10 @@
  * Time: 上午11:43
  */
 
-require_once('./HttpUtils.class.php');
 
-Class aMapApi {
+require_once('HttpUtils.class.php');
+
+Class AMapAPI {
 
     const AMAP_JS_KEY = "0bb05a448c9198ae767ef649e5e16549";
 

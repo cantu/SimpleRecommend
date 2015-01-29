@@ -1,0 +1,36 @@
+{
+    "name": "SimpleRecommend",
+    "description": "A simple recommend for youche ride share use PHP",
+    "keywords": ["ride share", "a star", "aMap", "pathfinding", "algorithm","GIS", "LBS"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "tusion",
+            "email": "tusion@163.com"
+        }
+    ],
+
+    "autoload": {
+        "psr-4": {
+            "SimpleRecommend\\Src\\": "src/",
+            "SimpleRecommend\\Test\\": "test/"
+        }
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/jmgq/php-a-star"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.0",
+        "shark/simple_html_dom": "dev-master"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "4.*",
+        "satooshi/php-coveralls": "dev-master",
+        "squizlabs/php_codesniffer": "1.*",
+        "jmgq/a-star": "1.*"
+    }
+
+}

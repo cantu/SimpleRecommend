@@ -1,4 +1,6 @@
 <?php
+namespace Youche\SimpleRecommend;
+
 /**
  * 地图计算的相关工具
  *
@@ -6,8 +8,9 @@
  * Date: 14-12-11
  * Time: 下午2:39
  */
-require_once('./simple_html_dom.php');
-require_once('./aMapAPI.class.php');
+require __DIR__ . '/../../vendor/autoload.php';
+//require_once('simple_html_dom.php');
+//require_once('aMapAPI.class.php');
 
 Class MapUtils {
 

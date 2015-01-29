@@ -1,4 +1,6 @@
 <?php
+namespace Youche\SimpleRecommend;
+
 /**
  * 主要存放友车的接口
  *
@@ -7,8 +9,7 @@
  * Time: 上午9:07
  */
 
-
-require_once('./HttpUtils.class.php');
+require_once('HttpUtils.class.php');
 
 
 class YoucheAPI
