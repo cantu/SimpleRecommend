@@ -1,7 +1,7 @@
 <?php
 namespace Youche\SimpleRecommend\subway;
 
-require_once ( __DIR__. "/Subway.class.php");
+require_once(__DIR__ . "/BusBasic.class.php");
 /**
  * Created by PhpStorm.
  * User: tusion
@@ -13,4 +13,5 @@ $subway = new Subway();
 $subway->setDebug(true);
 $subway->connect();
 $subway->createDataBase();
-//$subway->insertSubwayToDb();
+$subway->createTable();
+$subway->insertSubwayToDb();
