@@ -1,7 +1,7 @@
 <?php
 namespace Youche\SimpleRecommend;
-use Youche\SimpleRecommend\AMapAPI;
-use Youche\SimpleRecommend\MapUtils;
+//use Youche\SimpleRecommend\AMapAPI;
+//use Youche\SimpleRecommend\MapUtils;
 
 /**
  * Created by PhpStorm.
@@ -10,10 +10,7 @@ use Youche\SimpleRecommend\MapUtils;
  * Time: 下午4:56
  */
 
-
-
-class BusBasic {
-    //Global  $debug;
+abstract class BusBasic {
     private $db_connect ;
     private $db_config = array();
     private $debug;
@@ -116,6 +113,9 @@ class BusBasic {
             echo 'failed to select database: ' . $this->db_config['db']."\n";
         }
 
+        //解决中文乱码问题
+        mysql_query("set names UTF8", $this->db_connect);
+
     }
 
 
@@ -180,13 +180,17 @@ class BusBasic {
             throw new \Exception("Error: could not create table, sql:\n".$station_tb_sql );
         }
 
+        // hash_key        CHAR(32) NOT NULL COMMENT 'hash(起点公交站高德ID_终点公交站高德ID),车站间的链接是双向的',
         //站于站链接是双向的
         $connection_tb_sql = "CREATE TABLE IF NOT EXISTS connection_tb(
         id              INT(9) UNSIGNED NOT NULL AUTO_INCREMENT,
-        start_stop_id   VARCHAR(10) NOT NULL COMMENT '高德的公交站唯一编号',
-        end_stop_id     VARCHAR(10) NOT NULL COMMENT '公交站高德ID',
-        hash_key        VARCHAR(20) NOT NULL COMMENT 'hash(高德ID较小的车站_高德ID较大的车站),车站见的链接是双向的',
-        distance        DECIMAL(3.5) UNSIGNED NOT NULL,
+        start_stop_id   VARCHAR(10) NOT NULL COMMENT '起点公交站高德ID',
+        end_stop_id     VARCHAR(10) NOT NULL COMMENT '终点公交站高德ID',
+        distance        INT(10) UNSIGNED NOT NULL COMMENT '两个站之间的真实距离,单位:m',
+        hash_key        CHAR(32) NOT NULL COMMENT 'hash(sub_polyline),车站间的链接是双向的',
+        start_stop      VARCHAR(20) NOT NULL,
+        end_stop        VARCHAR(20) NOT NULL,
+        sub_polyline    TEXT NOT NULL COMMENT '两个站点间线路上的关键点,保证两点之间连线是直线,组合起来拟合路线',
         update_time     TIMESTAMP  NOT NULL,
         PRIMARY KEY( id)
         )ENGINE=InnoDB DEFAULT CHARSET=utf8";
@@ -231,31 +235,39 @@ class BusBasic {
 
     }
 
-
-    function InsertBusLineData( $json )
+    function executeSql( $sql )
     {
-
-    }
-
-    function parseSubway()
-    {
-        //require_once ( __DIR__. "/../class/AMapAPI.class.php");
-        //require_once ( __DIR__. "/../class/MapUtil.class.php");
-
-        $map_util = new MapUtils();
-        $subway_array = $map_util->getSubwayName();
-
-        $aMap = new AMapAPI();
-        //获取地铁路线的地理信息,请求高德公交路线接口
-        foreach ($subway_array as $i => $subway_name) {
-            print"---------- $subway_name -------------------\n";
-            $data = $aMap->getBusLine($subway_name);
-            $aMap->printBusLineInfo($data);
+        if( mysql_query($sql, $this->db_connect ))
+        {
+            if( $this->debug)
+            {
+                //echo( "success execute sql: \n $sql \n");
+            }
         }
-
-
-
+        else
+        {
+            throw new \Exception("Error: sql:\n $sql \n" );
+        }
     }
+
+    /*
+    function InsertBusLineData( $json_array )
+    {
+        \var_dump( $json_array);
+        if( $json_array['status'] == 1 and $json_array['count']>0 )
+        {
+            $count = 0;
+            foreach( $json_array['buslines'] as $line )
+            {
+                $format = "%2d, Route:%s,Distance:%-4.2f\n";
+                printf($format, $count++, $line['name'], floatval($line['distance']) );
+            }
+        }
+    }
+    */
+
+    abstract function insertDataToDB( $json_array );
+
 
 
 

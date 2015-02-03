@@ -84,6 +84,8 @@ class HttpUtils{
         //显示获得的数据
         //var_dump($data);
 
+        //关闭URL请求
+        curl_close($curl);
 
         if ($result === false ) {
             throw new Exception("cURL Error: " . curl_error($curl) );
@@ -91,7 +93,6 @@ class HttpUtils{
             return $result;
         }
 
-        //关闭URL请求
-        curl_close($curl);
+
     }
 }

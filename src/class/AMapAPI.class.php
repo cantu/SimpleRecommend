@@ -10,6 +10,8 @@ namespace Youche\SimpleRecommend;
  */
 
 
+use Symfony\Component\Config\Definition\Exception\Exception;
+
 require_once('HttpUtils.class.php');
 
 Class AMapAPI {
@@ -34,38 +36,65 @@ Class AMapAPI {
      * //http://restapi.amap.com/v3/bus/linename?s=rsv3&extensions=all&key=0bb05a448c9198ae767ef649e5e16549&output=json&city=%E5%8C%97%E4%BA%AC&keywords=300
      *  输入: 300, 特9, 地铁2号线.
      */
-    function getBusLine( $bus_line ){
+    function getBusLineInfo( $bus_name )
+    {
         $Bus_Url = "http://restapi.amap.com/v3/bus/linename";
         $parameters= array( 's'=>'rsv3',
                             'extensions'=>'all',
                             'key'=> self::AMAP_JS_KEY,
                             'output'=> 'json',
                             'city'=>'北京',
-                            'keywords'=>$bus_line);
+                            'keywords'=>$bus_name);
 
 
-        $data = $this->HttpUtils->getRequestWithParameter($Bus_Url, $parameters);
-        return $data;
+        $json = $this->HttpUtils->getRequestWithParameter($Bus_Url, $parameters);
+
+        if( $json != null )
+        {
+            $json_array = json_decode($json, true);
+            if( $json_array['status'] == 1)
+            {
+
+                if( $json_array['count'] > 0)
+                {
+                    return $json_array;
+                }
+                else
+                {
+                    throw new \Exception("Error: getBusLineInfo() return json not contain validate data.\n");
+                }
+            }
+            else
+            {
+                throw new \Exception("Error: getBusLineInfo() return json status error \n");
+            }
+        }
+
 
     }
 
-    /*
+    /**
      * 打印公交路线详情,输入公交路线请求但会的json
      */
+    function printBusLineInfo( $json_array )
+    {
 
-    function printBusLineInfo( $data ){
-
-        if( $data != null ){
-            $json = json_decode($data, true);
-            if( $json['status'] == 1){
+        if( isset( $json_array ) )
+        {
+            //$json = json_decode($data, true);
+            if( $json_array['status'] == 1 and $json_array['count']>0 )
+            {
                 $count = 0;
-                foreach( $json['buslines'] as $line ){
+                foreach( $json_array['buslines'] as $line )
+                {
                     $format = "%2d, Route:%s,Distance:%-4.2f\n";
                     printf($format, $count++, $line['name'], floatval($line['distance']) );
                 }
             }
 
-        }else{
+        }
+        else
+        {
             echo "error: not get json";
         }
     }
@@ -134,15 +163,6 @@ Class AMapAPI {
         }
     }
 
-
-
-    function printAllBusLines(){
-
-        for( $i=1; $i<=999; $i++){
-            $data =  $this->getBusLine($i);
-            $this->printBusLineInfo( $data);
-        }
-    }
 
     function test()
     {

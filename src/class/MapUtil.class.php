@@ -100,13 +100,82 @@ Class MapUtils {
         foreach ($html->find('div[class=line_name]') as $line) {
             //$id = $line->first_child()->class;
             $name_str = $line->first_child()->innertext;
-            $name = "地铁" . iconv('GB2312', "UTF-8", $name_str);
+            $name = iconv('GB2312', "UTF-8", $name_str);
+            if( $name != '机场线')
+            {   //其他线路要加上地铁两个字,高德公交搜索接口决定的
+                $name = "地铁" .$name;
+            }
             //echo "$id : $name\n";
             $subway_array[] = $name;
         }
 
         //var_dump($subway_array);
         return $subway_array;
+    }
+
+    /*
+     * 在polyline的字符串中找到一段路线轨迹
+     */
+    function getSubPolyline( $start, $end, $polyline)
+    {
+        $temp1 =  \strstr($polyline,$end,true).$end;
+        //var_dump( $temp1);
+        $temp2 = \strstr($temp1,$start);
+        //var_dump( $temp2);
+        return $temp2;
+
+        /*
+        $temp1 =  \strstr($polyline,$end,TRUE);
+        var_dump( $temp1);
+        $temp2 = \strstr($polyline,$start,TRUE).$start;
+        var_dump( $temp2);
+        return str_replace($temp2,"",$temp1);
+         */
+        /*
+        $content=explode($start,$polyline);
+        $content=explode($end,$content[1]);
+        return $content[0];
+        */
+    }
+
+    function parsePolyline( $polyline )
+    {
+
+        $points = \explode(';', $polyline );
+        if( \count( $points) > 0 )
+        {
+            $result=array();
+            $result['start_stop'] =$points[0];
+            $result['end_stop']= \end($points);
+            $result['count'] = \count($points);
+            foreach( $points as $i=>$point)
+            {
+                $t = \explode( ',', $point);
+                if( \count($t) > 1 )
+                {
+                    $result['points'][$i]['lng']= \floatval( $t[0]);
+                    $result['points'][$i]['lat'] = \floatval( $t[1]);
+                }
+
+            }
+
+            $distance = 0;
+            for($i=0; $i<$result['count']-1; $i++)
+            {
+                $distance += $this->getDistance( $result['points'][$i]['lat'], $result['points'][$i]['lng'],
+                                                $result['points'][$i+1]['lat'], $result['points'][$i+1]['lng'] ) ;
+
+            }
+            $result['distance'] = (int)$distance ;
+
+            return $result;
+        }
+        else
+        {
+         return null;
+        }
+
+
     }
 
 
