@@ -37,14 +37,8 @@ Class MapUtils {
         $lat2 = ($lat2 * pi() ) / 180;
         $lng2 = ($lng2 * pi() ) / 180;
 
-        /*
-          Using the
-          Haversine formula
-
-          http://en.wikipedia.org/wiki/Haversine_formula
-
-          calculate the distance
-        */
+        // Using the Haversine formula calculate the distance
+        //  http://en.wikipedia.org/wiki/Haversine_formula
 
         $calcLongitude = $lng2 - $lng1;
         $calcLatitude = $lat2 - $lat1;
@@ -118,10 +112,18 @@ Class MapUtils {
      */
     function getSubPolyline( $start, $end, $polyline)
     {
+        /*
         $temp1 =  \strstr($polyline,$end,true).$end;
-        //var_dump( $temp1);
+        var_dump( $temp1);
         $temp2 = \strstr($temp1,$start);
-        //var_dump( $temp2);
+        var_dump( $temp2);
+        return $temp2;
+        */
+
+        $temp1 = \strstr($polyline,$start);
+        //var_dump($temp1);
+        $temp2 = \strstr($temp1, $end, true).$end;
+        //var_dump($temp2);
         return $temp2;
 
         /*
@@ -138,6 +140,11 @@ Class MapUtils {
         */
     }
 
+    /**
+     * 分解计算每一段polyline路径的关键点和距离
+     * @param $polyline
+     * @return array|null
+     */
     function parsePolyline( $polyline )
     {
 

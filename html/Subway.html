@@ -1,0 +1,172 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>公交线路查询</title>
+    <link rel="stylesheet" type="text/css" href="http://developer.amap.com/Public/css/demo.Default.css" />
+    <script language="javascript" src="http://webapi.amap.com/maps?v=1.3&key=0bb05a448c9198ae767ef649e5e16549"></script>
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+
+    <script language="javascript">
+        //reference:http://lbs.amap.com/api/javascript-api/example/m/1302-2/
+        /*
+         * 该示例主要流程分为三个步骤
+         * 1. 首先调用公交路线查询服务(lineSearch)
+         * 2. 根据返回结果解析，输出解析结果(lineSearch_Callback)
+         * 3. 在地图上绘制公交线路()
+         */
+        var mapObj; //地图对象
+        var resLine  = ''; //结果表格对象
+        var circle; //公交站的圆点
+
+        //网页载入时运行
+        function mapInit() {
+            var opts = {
+                level:13, //设置地图缩放级别
+                center:new AMap.LngLat(116.397428, 39.90923) //设置地图中心点
+            }
+            mapObj = new AMap.Map("iCenter", {
+                view: new AMap.View2D({
+                    center:new AMap.LngLat(116.397428,39.90923),//地图中心点
+                    zoom:13 //地图显示的缩放级别
+                }),
+                //采用卫星地图演示效果更好.
+                layers: [new AMap.TileLayer.Satellite()]
+            });
+
+            mapclear();
+
+            initConnectionNet();
+
+            var sub_polyline1 = "116.515664,39.908495;116.514803,39.908494;116.51391,39.908496;116.506264,39.908512;116.502806,39.908591;116.496792,39.908781;116.495516,39.908785";
+            var sub_polyline2 = "116.515664,39.908495;116.515664,39.908495;116.514803,39.908494;116.51391,39.908496;116.506264,39.908512;116.502806,39.908591;116.496792,39.908781;116.495516,39.908785";
+
+            var polyline1 = parsePolyline(sub_polyline1);
+            var polyline2 = parsePolyline(sub_polyline2);
+
+
+            drawConnection(polyline1, 'red');
+            drawConnection(polyline2, 'blue');
+            //drawStation( stops );
+            mapObj.setFitView();
+
+        }
+
+        function initConnectionNet()
+        {
+            var json_file = './stations.json';
+            $.getJSON( json_file, function( data){
+                var num = data.total;
+                alert( "json length:" + num);
+            });
+        }
+
+
+        /*
+         *清空地图覆盖物与查询结果
+         */
+        function mapclear() {
+            btContent = '';
+            resLine   = '';
+            mapObj.clearMap();
+        }
+
+
+        function parsePolyline( line_str ){
+            var temp = new Array();
+            temp = line_str.split(";");
+
+            var polyline_array = new Array();
+            for( var i=0; i<temp.length; i++){
+                var item = temp[i].split(',');
+                //polyline_array.push( {"lng":parseFloat(item[0]), "lat":parseFloat(item[1])});
+                polyline_array.push( new AMap.LngLat(parseFloat(item[0]),parseFloat(item[1])));
+                //polyline_array.push( {"lng":parseFloat(item[0]), "lat":parseFloat(item[1]), "r":parseFloat(item[0]), "w":parseFloat(item[1]) });
+                //polyline_array.push( "c{ lng="+item[0] + ", lat:" +item[1] +"}");
+                //polyline_array.push( AMap.LngLat(parseFloat(item[0]) +','+ parseFloat(item[1]) ) );
+            }
+            return polyline_array;
+        }
+
+
+        /*
+         *绘制路线
+         */
+        function drawConnection(point_Arr , color) {
+
+            console.log( point_Arr.toString());
+            //console.log( point_Arr[0]);
+            //console.log( point_Arr[0].toString());
+
+            //绘制乘车的路线
+            busPolyline = new AMap.Polyline({
+                map:mapObj,
+                path:point_Arr,
+                strokeColor:color,//线颜色
+                strokeOpacity:1,//线透明度
+                strokeWeight:5//线宽
+            });
+
+
+            //增加关键点的圆点，　参考http://lbs.amap.com/api/javascript-api/example/t/1901-2/
+
+            for( var i=0; i<point_Arr.length; i++){
+                var point_marker = new AMap.Marker({
+                    map:mapObj,
+                    //position: new AMap.LngLat(point_Arr[i].lng,point_Arr[i].lat),
+                    position:point_Arr[i],
+                    icon:"http://webapi.amap.com/images/point.png",
+                    offset:{x:-8,y:-8} //相对于基点的位置
+                });
+
+            }
+
+
+
+        }
+
+        /*
+         *绘制路线途径站点
+         */
+        function drawStation( stops ) {
+
+            //增加关键点的圆点，　参考http://lbs.amap.com/api/javascript-api/example/t/1901-2/
+
+            for( var i=0; i<stops.length; i++){
+                var point_marker = new AMap.Marker({
+                    map:mapObj,
+                    //position: stops[i].location,
+                    position:new AMap.LngLat(stops[i].lng,stops[i].lat),
+                    icon:'./icon/bus_station_marker.png',
+                    offset:{x:-16,y:-16}, //相对于基点的位置
+                    angle:45,
+                    zIndex:100
+                });
+
+            }
+
+            /*
+            //自定义起点，终点图标
+            var sicon = new AMap.Icon({
+                image: "http://api.amap.com/Public/images/js/poi.png",
+                size: new AMap.Size(44,44),
+                imageOffset: new AMap.Pixel(-334, -180)
+            });
+            var eicon = new AMap.Icon({
+                image: "http://api.amap.com/Public/images/js/poi.png",
+                size: new AMap.Size(44,44),
+                imageOffset: new AMap.Pixel(-334, -134)
+            });
+            */
+
+        }
+
+
+    </script>
+</head>
+<body onload="mapInit();">
+<div id="iCenter" style="height:600px" ></div>
+
+
+</body>
+</html>						

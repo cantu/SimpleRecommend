@@ -127,19 +127,18 @@ abstract class BusBasic {
 
         $subway_line_sql = "CREATE TABLE IF NOT EXISTS bus_line_tb(
         id            INT(4) UNSIGNED  NOT NULL AUTO_INCREMENT,
-        line_name     VARCHAR(20) NOT NULL COMMENT '地铁名称,同一线路会有多条方向相反的名称',
-        ployline      TEXT NOT NULL COMMENT '线路上的关键点,保证两点之间连线是直线,组合起来拟合路线',
+        line_name     VARCHAR(200) NOT NULL COMMENT '地铁名称,同一线路会有多条方向相反的名称',
+        line_type     VARCHAR(100) NOT NULL,
         start_stop    VARCHAR(100) NOT NULL COMMENT '起点站中文名字',
-        start_stop_id INT(3)  UNSIGNED  NOT NULL COMMENT '起点站编号,对应表staion_tb的id列',
         end_stop      VARCHAR(100) NOT NULL COMMENT '终点站中文名字',
-        end_stop_id   INT(3)  UNSIGNED COMMENT '终点站编号,对应表staion_tb的id列',
         company       VARCHAR(20) NOT NULL,
-        distance      DECIMAL(3.5) UNSIGNED NOT NULL,
-        basic_price   DECIMAL(3.2) UNSIGNED NOT NULL,
-        total_price   DECIMAL(3.2) UNSIGNED NOT NULL,
+        distance      DECIMAL(8,5) UNSIGNED NOT NULL,
+        basic_price   DECIMAL(5,2) UNSIGNED NOT NULL,
+        total_price   DECIMAL(5,2) UNSIGNED NOT NULL,
         bounds        VARCHAR(40) NOT NULL COMMENT '路线形状的范围对应东北角和西南角',
-        busstops      VARCHAR(200) NOT NULL COMMENT '途径站点. 顺序编号:站点编号. 站点坐标一定包含在ployline中',
+        busstops      VARCHAR(4000) NOT NULL COMMENT '途径站点. 顺序编号:站点编号. 站点坐标一定包含在ployline中',
         bus_line_id   VARCHAR(10) NOT NULL COMMENT '高德的公交线路编号id',
+        polyline      VARCHAR(65530) NOT NULL COMMENT '线路上的关键点,保证两点之间连线是直线,组合起来拟合路线',
         update_time   TIMESTAMP  NOT NULL,
         PRIMARY KEY(id)
         )ENGINE=InnoDB DEFAULT CHARSET=utf8 ";
@@ -160,9 +159,10 @@ abstract class BusBasic {
         $station_tb_sql = " CREATE TABLE IF NOT EXISTS station_tb(
         id INT(4) UNSIGNED  NOT NULL AUTO_INCREMENT,
         station_name VARCHAR(100) NOT NULL COMMENT '站点中文名字',
-        location_lat DECIMAL(3.6) UNSIGNED NOT NULL,
-        location_lng DECIMAL (3.6) UNSIGNED NOT NULL,
+        location_lat DECIMAL(9,6) UNSIGNED NOT NULL,
+        location_lng DECIMAL (9,6) UNSIGNED NOT NULL,
         busstop_id VARCHAR(10) NOT NULL COMMENT '高德的公交站唯一编号',
+        line_name     VARCHAR(200) NOT NULL COMMENT '地铁名称,同一线路会有多条方向相反的名称',
         transation VARCHAR(400) COMMENT '此站点和其它站点的连通性. 站点编号:距离',
         update_time TIMESTAMP  NOT NULL,
         PRIMARY KEY( id )
@@ -184,13 +184,16 @@ abstract class BusBasic {
         //站于站链接是双向的
         $connection_tb_sql = "CREATE TABLE IF NOT EXISTS connection_tb(
         id              INT(9) UNSIGNED NOT NULL AUTO_INCREMENT,
+        start_name      VARCHAR(100) NOT NULL COMMENT '站点中文名字',
+        end_name         VARCHAR(100) NOT NULL COMMENT '站点中文名字',
         start_stop_id   VARCHAR(10) NOT NULL COMMENT '起点公交站高德ID',
         end_stop_id     VARCHAR(10) NOT NULL COMMENT '终点公交站高德ID',
         distance        INT(10) UNSIGNED NOT NULL COMMENT '两个站之间的真实距离,单位:m',
         hash_key        CHAR(32) NOT NULL COMMENT 'hash(sub_polyline),车站间的链接是双向的',
         start_stop      VARCHAR(20) NOT NULL,
         end_stop        VARCHAR(20) NOT NULL,
-        sub_polyline    TEXT NOT NULL COMMENT '两个站点间线路上的关键点,保证两点之间连线是直线,组合起来拟合路线',
+        line_name     VARCHAR(200) NOT NULL COMMENT '地铁名称,同一线路会有多条方向相反的名称',
+        sub_polyline    VARCHAR(10000) NOT NULL COMMENT '两个站点间线路上的关键点,保证两点之间连线是直线,组合起来拟合路线',
         update_time     TIMESTAMP  NOT NULL,
         PRIMARY KEY( id)
         )ENGINE=InnoDB DEFAULT CHARSET=utf8";
@@ -211,8 +214,8 @@ abstract class BusBasic {
         $search_tb_sql=" CREATE TABLE  IF NOT EXISTS search_tb(
         id INT(6) UNSIGNED NOT NULL AUTO_INCREMENT,
         search_key VARCHAR(20) NOT NULL COMMENT '起点站高德ID_终点站高德ID',
-        distance DECIMAL(3.5) UNSIGNED NOT NULL,
-        cost DECIMAL(3.2) UNSIGNED NOT NULL,
+        distance DECIMAL(8,5) UNSIGNED NOT NULL,
+        cost DECIMAL(5,2) UNSIGNED NOT NULL,
         ployline TEXT NOT NULL COMMENT '线路上的关键点,保证两点之间连线是直线,组合起来拟合路线',
         sub_line VARCHAR(100)  COMMENT '线路换乘说明',
         bounds VARCHAR(40) NOT NULL COMMENT '路线形状的范围对应东北角和西南角',
@@ -237,17 +240,33 @@ abstract class BusBasic {
 
     function executeSql( $sql )
     {
-        if( mysql_query($sql, $this->db_connect ))
+        if( mysql_query($sql, $this->db_connect ) )
         {
             if( $this->debug)
             {
-                //echo( "success execute sql: \n $sql \n");
+               // echo( "success execute sql: \n $sql \n");
             }
         }
         else
         {
             throw new \Exception("Error: sql:\n $sql \n" );
         }
+    }
+
+
+    function querySql( $sql)
+    {
+        if( \strlen($sql) > 1 )
+        {
+            $result = \mysql_query( $sql, $this->db_connect );
+            if( $this->debug)
+            {
+                // echo( "success execute sql: \n $sql \n");
+            }
+            return $result;
+        }
+
+
     }
 
     /*

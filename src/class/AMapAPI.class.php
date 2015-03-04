@@ -100,8 +100,8 @@ Class AMapAPI {
     }
 
 
-    /*
-     *
+
+    /**
      *逆地理编码
      *输入一个点的经纬度，返回街道名称
      * http://restapi.amap.com/v3/geocode/regeo?location=116.396574,39.992706&key=0bb05a448c9198ae767ef649e5e16549&s=rsv3&radius=1000&extensions=all
@@ -132,7 +132,7 @@ Class AMapAPI {
         }
     }
 
-    /*
+    /**
      *驾车导航，获取两点间的行车路径
      *http://restapi.amap.com/v3/direction/driving?origin=116.495,39.94&destination=116.4,39.805&strategy=0&s=rsv3&extensions=base&key=0bb05a448c9198ae767ef649e5e16549
      *
